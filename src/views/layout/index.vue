@@ -32,6 +32,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import http from '@/apiRequest/http'
+import { removeItem } from "@/utils/storage";
 export default {
   data() {
     return {
@@ -50,7 +51,9 @@ export default {
   },
   methods: {
     loginOut() {
-      http.get('/auth/logout', {}).then((response) => {
+      http.delete('/auth/logout', {}).then((response) => {
+        removeItem("userInfo");
+        removeItem("token");
         this.$router.push('/login');
         this.$message({
           message: 'ログアウト成功！',
