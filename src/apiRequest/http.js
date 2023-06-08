@@ -21,7 +21,7 @@ service.interceptors.request.use(config => {
     spinner: 'el-icon-loading',
     background: 'rgba(0, 0, 0, 0.7)'
   });
-  config.headers.Authorization = getItem("authorization") || "";
+  config.headers.Authorization = getItem("token") || "";
   return config
 }, error => {
   return Promise.reject('请求出错')

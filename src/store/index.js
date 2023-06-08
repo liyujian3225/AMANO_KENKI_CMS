@@ -6,14 +6,21 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    user: getItem("authorization")
+    userInfo: getItem("userInfo"),
+    token: getItem("token"),
   },
-  getters: {},
+  getters: {
+    userInfo: state => state.userInfo,
+  },
   mutations: {
-    setUser (state, data) {
-      state.user = data;
-      setItem("authorization", state.user)
-    }
+    setUserInfo (state, data) {
+      state.userInfo = data;
+      setItem("userInfo", data)
+    },
+    setToken (state, data) {
+      state.token = data;
+      setItem("token", data)
+    },
   },
   actions: {},
   modules: {}

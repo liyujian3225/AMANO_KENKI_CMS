@@ -74,13 +74,13 @@ export default {
           http.post('/auth/login', params).then((response) => {
             const { user, token } = response
             const { user: userInfo } = user;
-            console.log(userInfo, token)
-            this.$store.commit('setUser', 'Bearer ' + token)
+            this.$store.commit('setUserInfo', userInfo)
+            this.$store.commit('setToken', 'Bearer ' + token);
             this.$message({
               message: 'ログイン成功！',
               type: 'success'
             })
-            this.$router.push('/homePage')
+            this.$router.push('/layout')
           })
         }
       })
