@@ -12,11 +12,13 @@
     <div class="content">
       <div class="leftMenu">
         <el-menu
+          :router="true"
           default-active="0"
           background-color="#29619C">
           <el-menu-item
             v-for="(item, index) in menuList"
             :index="String(index)"
+            :route="item.path"
           >
             <img class="iconImage" :src="item.icon" alt="">
             <span class="title" slot="title">{{ item.name }}</span>
@@ -38,11 +40,11 @@ export default {
     return {
       logoImg: require("@/assets/logo.png"),
       menuList: [
-        { name: "マリン用品", path: "", icon: require("@/assets/boat.png") },
-        { name: "エンジン", path: "", icon: require("@/assets/wind.png") },
-        { name: "中古建機", path: "", icon: require("@/assets/car-side.png") },
-        { name: "メーカー登録", path: "", icon: require("@/assets/building.png") },
-        { name: "パスワード変更", path: "", icon: require("@/assets/lock.png") },
+        { name: "マリン用品", path: "/boat", icon: require("@/assets/boat.png") },
+        { name: "エンジン", path: "/engine", icon: require("@/assets/wind.png") },
+        { name: "中古建機", path: "/buildMachine", icon: require("@/assets/car-side.png") },
+        { name: "メーカー登録", path: "/factoryLogin", icon: require("@/assets/building.png") },
+        { name: "パスワード変更", path: "/changePassword", icon: require("@/assets/lock.png") },
       ]
     }
   },
@@ -127,7 +129,7 @@ div.layout {
     >div.rightContent {
       width: calc(100% - 250px);
       height: 100%;
-      overflow-y: hidden;
+      overflow-y: auto;
       padding: 20px;
       box-sizing: border-box;
       background: #FFFFFF 0 0 no-repeat padding-box;

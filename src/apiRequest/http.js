@@ -31,7 +31,8 @@ service.interceptors.request.use(config => {
 service.interceptors.response.use(response => {
   loadingInstance.close();
   const { data, status } = response;
-  if (status === 200) {
+  const successCode = [200, 201]
+  if (successCode.includes(status)) {
     return Promise.resolve(data)
   } else {
     this.$message({
