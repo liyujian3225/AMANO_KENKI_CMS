@@ -39,8 +39,13 @@
         label="ソート">
       </el-table-column>
       <el-table-column
-        prop="saleStatus"
         label="販売状態">
+        <template slot-scope="scope">
+          <el-select v-model="scope.row.saleStatus" placeholder="请选择" @change="(val) => changeSaleStatus(val, scope.row.id)">
+            <el-option label="售卖中" value="ON_SOLD"></el-option>
+            <el-option label="售卖完毕" value="SOLD_OUT"></el-option>
+          </el-select>
+        </template>
       </el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
@@ -98,6 +103,11 @@ export default {
         query: {
           name: this.pageName
         }
+      })
+    },
+    changeSaleStatus(val, id) {
+      http.put('/api/product', { id, saleStatus: val }).then((response) => {
+        this.getProductList();
       })
     }
   }
