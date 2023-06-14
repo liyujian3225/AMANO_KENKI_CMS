@@ -28,16 +28,18 @@
         </el-upload>
       </el-form-item>
       <el-form-item label="ソート">
-        <el-input v-model="addForm.type"></el-input>
+        <el-input v-model="addForm.priority"></el-input>
       </el-form-item>
       <el-form-item label="品名">
-        <el-input v-model="addForm.type"></el-input>
+        <el-input v-model="addForm.name"></el-input>
       </el-form-item>
 
       <el-row :gutter="10">
         <el-col :span="12">
           <el-form-item label="製品状態">
-            <el-input v-model="addForm.type"></el-input>
+            <el-select v-model="addForm.status" placeholder="请选择製品状態">
+              <el-option label="中古" value="SECOND_HAND"></el-option>
+            </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -71,10 +73,10 @@
       </el-row>
 
       <el-form-item label="オプション">
-        <el-input v-model="addForm.type"></el-input>
+        <el-input v-model="addForm.option"></el-input>
       </el-form-item>
       <el-form-item label="ギア比/ギア型式">
-        <el-input v-model="addForm.type"></el-input>
+        <el-input v-model="addForm.gearType"></el-input>
       </el-form-item>
       <el-form-item label="ビデオのリンク">
         <el-input v-model="addForm.videoUrl"></el-input>
@@ -104,19 +106,20 @@ export default {
       headerObj: { Authorization: getItem("token")},
       Manufacturer: [],
       addForm: {
-
         coverUrl: '',
 
 
-        name: "",
-        region: "",
-        type: "",
-
-        horsepower: "",  //马力
-        manufacturer_id: "",  //厂家ID
-        manufacture_year: "",  //制造年
-        videoUrl: "",  //视频地址
-        description: "",  //商品说明
+        fileIds: [],
+        priority: "",  //3优先级，只支持数字。
+        name: "",  // 4产品名字
+        status: "",  // 5产品状态
+        manufacturer_id: "",  //6厂家ID
+        horsepower: "",  //7马力
+        manufacture_year: "",  //8制造年
+        option: "",  //9描述
+        gearType: "",  //10型号
+        videoUrl: "",  //11视频地址
+        description: "",  //12商品说明
       }
     }
   },

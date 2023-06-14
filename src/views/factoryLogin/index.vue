@@ -24,7 +24,7 @@
           <el-button
             size="mini"
             type="danger"
-            @click="handleDelete(scope.$index, scope.row)">削除＃サクジョ＃</el-button>
+            @click="handleDelete(scope.$index, scope.row)">削除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -87,7 +87,7 @@ export default {
       http.delete('/api/manufacturer/' + id).then((response) => {
         this.getManufacturer();
         this.$message({
-          message: '削除に成功しました！',
+          message: '削除！',
           type: 'success'
         })
       })
