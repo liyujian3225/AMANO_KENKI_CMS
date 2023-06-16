@@ -12,9 +12,6 @@
         <el-form-item label="認証番号" prop="code">
           <el-input v-model="formLabelAlign.code"></el-input>
         </el-form-item>
-        <el-form-item label="しいパスワード" prop="oldPass">
-          <el-input v-model="formLabelAlign.oldPass"></el-input>
-        </el-form-item>
         <el-form-item label="新しいパスワード再確認" prop="newPass">
           <el-input v-model="formLabelAlign.newPass"></el-input>
         </el-form-item>
@@ -27,30 +24,34 @@
 </template>
 <script>
 import http from "@/apiRequest/http";
-
+import JSEncrypt from 'jsencrypt/bin/jsencrypt.min';
 export default {
   data() {
     return {
       rules: {
         email: [{ required: true, message: 'メールアドレスを入力してください', trigger: 'blur' }],
         code: [{ required: true, message: '認証コードを入力してください', trigger: 'blur' }],
-        oldPass: [{ required: true, message: '古いパスワードを入力してください', trigger: 'blur' }],
         newPass: [{ required: true, message: '新しいパスワードを入力してください', trigger: 'blur' }],
       },
       formLabelAlign: {
         email: '',
         code: '',
-        oldPass: '',
         newPass: '',
       }
     }
   },
   methods: {
+    encrypt(txt) {
+      const publicKey = 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsaBQ8DxnMX5u1IoqPFEAxhJ5MxIw6d/4GtwJ9aRpNLEWxMmo39G3LW5HkUdx4vQFBdL3xBH+kws/ciTY0u6Ub4d8q3AZjRJprKjyidFIm/JwCtCLdZwlHas6avGLfo3SFRERVcl6HiZNAwRPyajU4z3KJZ3+FyP8SJJiiBGzng+pCAXi0/12rh0JT3aQn6CSzSKmc+PhCTAOlMOlSdpH3UEBwcb8H1xu0/0BWdUoYMUatCmwAzDgLs0NrVuRqL4cqK7rFzKdXJWKHlNzQgOx+7SeKBp+OFw0MuWssOlH5477cZEl1wVsDNe6/GcRC2EoLQu1WPNxLfMiuES1x9ryIQIDAQAB'
+      const encryptor = new JSEncrypt()
+      encryptor.setPublicKey(publicKey) // 设置公钥
+      return encryptor.encrypt(txt) // 对需要加密的数据进行加密
+    },
     getCode() {
       let that = this;
       this.$refs['form'].validateField("email", (valid) => {
         if (that.formLabelAlign.email) {
-          http.post('/api/code/email/resetPass', that.formLabelAlign).then((response) => {
+          http.post('/api/code/email/resetPass?email=' + that.formLabelAlign.email).then((response) => {
             that.$message({
               message: '認証コードの取得に成功しました！',
               type: 'success'
@@ -62,7 +63,11 @@ export default {
     handleSave() {
       this.$refs['form'].validate((valid) => {
         if (valid) {
-          http.post('/api/users/changePass', this.formLabelAlign).then((response) => {
+          const params = {
+            ...this.formLabelAlign,
+            newPass: this.encrypt(this.formLabelAlign.newPass)
+          }
+          http.post('/api/users/changePass', params).then((response) => {
             this.$message({
               message: 'パスワードの変更！',
               type: 'success'

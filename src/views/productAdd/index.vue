@@ -19,21 +19,37 @@
       <el-form-item label="写真">
         <el-upload
           action="http://163.43.183.26:8000/api/product/pict"
+          list-type="picture-card"
           accept="image/jpg,image/jpeg,image/png"
           :data="{ type: 'SLIDESHOW' }"
           :headers="headerObj"
-          :show-file-list="false">
-          <img v-if="imageUrl" :src="imageUrl" class="avatar">
-          <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          :multiple="true"
+          :limit="15"
+          :file-list="fileList"
+          :on-success="handleListUploadSuccess"
+          :on-preview="handlePictureCardPreview"
+          :on-remove="handleRemove">
+          <i class="el-icon-plus"></i>
         </el-upload>
+        <el-dialog :visible.sync="dialogVisible">
+          <img width="100%" :src="dialogImageUrl" alt="">
+        </el-dialog>
       </el-form-item>
-      <el-form-item label="ソート">
-        <el-input v-model="addForm.priority"></el-input>
-      </el-form-item>
+
+      <el-row :gutter="10">
+        <el-col :span="12">
+          <el-form-item label="ソート">
+            <el-input-number
+              v-model="addForm.priority"
+              :min="1" >
+            </el-input-number>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
       <el-form-item label="品名">
         <el-input v-model="addForm.name"></el-input>
       </el-form-item>
-
       <el-row :gutter="10">
         <el-col :span="12">
           <el-form-item label="製品状態">
@@ -66,6 +82,7 @@
             <el-date-picker
               v-model="addForm.manufacture_year"
               type="year"
+              value-format="yyyy"
               placeholder="选择年">
             </el-date-picker>
           </el-form-item>
@@ -90,10 +107,9 @@
         </el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary">キャンセル</el-button>
-        <el-button>保存</el-button>
+        <el-button type="primary" @click="handleCancel">キャンセル</el-button>
+        <el-button @click="handleSaveProductInfo">保存</el-button>
       </el-form-item>
-
     </el-form>
   </div>
 </template>
@@ -103,14 +119,29 @@ import http from "@/apiRequest/http";
 export default {
   data() {
     return {
+      id: this.$route.query.id,
+      name: this.$route.query.name,
       headerObj: { Authorization: getItem("token")},
       Manufacturer: [],
+      category: {
+        boat: "MARINE_SUPPLIES",
+        engine: "ENGINE",
+        buildMachine: "USED_CONSTRUCTION_MACHINE",
+      },
+
+      //封面图地址
+      coverUrl: '',
+      coverId: '',
+
+      //批量上传图片
+      fileList: [],
+      dialogImageUrl: '',
+      dialogVisible: false,
+
       addForm: {
-        coverUrl: '',
-
-
+        id: undefined,
         fileIds: [],
-        priority: "",  //3优先级，只支持数字。
+        priority: 1,  //3优先级，只支持数字。
         name: "",  // 4产品名字
         status: "",  // 5产品状态
         manufacturer_id: "",  //6厂家ID
@@ -123,25 +154,97 @@ export default {
       }
     }
   },
-  created() {
-    this.getManufacturer();
+  async created() {
+    await this.getManufacturer();
+    if (this.id) this.getProduceInfo();
   },
   methods: {
+    //查询产品详情
+    getProduceInfo() {
+      http.get(`/api/product/${this.id}`).then((response) => {
+        this.coverId = response.productFiles.filter(item => item.type === "COVER")[0].id;
+        this.coverUrl = `http://163.43.183.26:8000/api/product/pict/${this.coverId}`;
+
+        const fileList = response.productFiles.filter(item => item.type !== "COVER");
+        this.fileList = fileList.map(item => {
+          const { id } = item;
+          return {
+            id,
+            name: "",
+            url: `http://163.43.183.26:8000/api/product/pict/${id}`,
+          }
+        })
+        this.addForm = {
+          id: this.id,
+          fileIds: response.productFiles.map(item => item.id),
+          priority: response.priority,
+          name: response.name,
+          status: response.status,
+          manufacturer_id: response.manufacturer.id,  //6厂家ID
+          horsepower: response.horsepower,
+          manufacture_year: String(response.manufactureYear),
+          option: response.option,
+          gearType: response.gearType,
+          videoUrl: response.videoUrl,
+          description: response.description,
+        }
+      })
+    },
+    //上传封面图
     handleCoverUploadSuccess(res, file) {
-      console.log(res)
+      const { id } = res;
+      this.coverUrl = `http://163.43.183.26:8000/api/product/pict/${id}`;
+      //先提出之前的coverId
+      this.addForm.fileIds = this.addForm.fileIds.filter(pid => pid !== this.coverId);
+      this.addForm.fileIds.push(id);
+      this.coverId = id;
+    },
+    //批量上传图片
+    handleListUploadSuccess(res, file) {
+      const { id } = res;
+      this.addForm.fileIds.push(id);
+    },
+    handleRemove(file, fileList) {
+      let id;
+      if (file.hasOwnProperty("response")) {
+        id = file.response;
+      } else {
+        id = file.id;
+      }
+      this.addForm.fileIds = this.addForm.fileIds.filter(pid => pid !== id);
+    },
+    handlePictureCardPreview(file) {
+      this.dialogImageUrl = file.url;
+      this.dialogVisible = true;
     },
     getManufacturer() {
       http.get('/api/manufacturer').then((response) => {
         this.Manufacturer = response;
       })
     },
+    async handleSaveProductInfo() {
+      const params = {
+        ...this.addForm,
+        category: this.category[this.name]
+      }
+      !!this.id ? await http.put('/api/product', params) : await http.post('/api/product', params);
+      this.handleCancel();
+    },
+    handleCancel() {
+      this.$router.go(-1);
+    }
   }
 }
 </script>
 <style lang="scss" scoped>
 div.productAdd {
-  width: 1000px;
+  width: 800px;
   margin: 0 auto;
+  ::v-deep {
+    .el-select, .el-input {
+      width: 100%;
+    }
+  }
   ::v-deep .el-upload {
     border: 1px dashed #255691;
     border-radius: 6px;

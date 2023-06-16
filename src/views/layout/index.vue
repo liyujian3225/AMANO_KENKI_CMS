@@ -26,7 +26,7 @@
         </el-menu>
       </div>
       <div class="rightContent">
-        <router-view></router-view>
+        <router-view :key="$route.fullPath"></router-view>
       </div>
     </div>
   </div>

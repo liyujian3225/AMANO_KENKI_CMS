@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { Loading } from 'element-ui';
 import { getItem } from "@/utils/storage";
+import { Message } from 'element-ui';
 
 const service = axios.create({
   timeout: 1000 * 30,
@@ -31,18 +32,18 @@ service.interceptors.request.use(config => {
 service.interceptors.response.use(response => {
   loadingInstance.close();
   const { data, status } = response;
-  const successCode = [200, 201]
+  const successCode = [200, 201, 204]
   if (successCode.includes(status)) {
     return Promise.resolve(data)
   } else {
-    this.$message({
-      message: "参数有误，请查看！",
-      type: 'error'
-    })
+    Message.error("参数有误，请查看！")
     return Promise.reject(data)
   }
 }, _error => {
   // 返回报错处理
-
+  loadingInstance.close();
+  const { response } = _error;
+  const { data } = response;
+  Message.error(data)
 })
 export default service

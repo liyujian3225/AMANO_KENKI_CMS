@@ -48,7 +48,7 @@ export default {
       logoImg: require("@/assets/logo.png"),
       ruleForm: {
         username: 'AMANO-KENKI',
-        password: 'Aoqier!16'
+        password: '123456'
       },
       rules: {
         username: [{ required: true, message: 'メールアドレスを入力してください', trigger: 'blur' }],
@@ -80,7 +80,7 @@ export default {
               message: 'ログイン成功！',
               type: 'success'
             })
-            this.$router.push('/layout')
+            this.$router.push('/boat')
           })
         }
       })

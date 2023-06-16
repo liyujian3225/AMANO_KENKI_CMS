@@ -19,7 +19,7 @@
         <template slot-scope="scope">
           <el-image
             style="width: 100px; height: 100px"
-            :src="scope.row.productFiles[0].localStorage.path"
+            :src="scope.row.coverUrl"
             fit="cover">
           </el-image>
         </template>
@@ -52,7 +52,7 @@
           <el-button
             size="mini"
             type="danger"
-            @click="handleDelete(scope.$index, scope.row)">編集
+            @click="handleEdit(scope.$index, scope.row)">編集
           </el-button>
           <el-button
             size="mini"
@@ -69,15 +69,20 @@ import http from "@/apiRequest/http";
 
 export default {
   data() {
+    const category = {
+      boat: "MARINE_SUPPLIES",
+      engine: "ENGINE",
+      buildMachine: "USED_CONSTRUCTION_MACHINE",
+    }
     return {
+      pageName: this.$route.name,
       pageNameMap: {
         boat: "マリン用品",
         engine: "エンジン",
         buildMachine: "中古建機",
       },
-      pageName: this.$route.name,
       searchParams: {
-        id: "",
+        category: category[this.$route.name],
         name: "",
         manufacturerId: "",
         size: 10,
@@ -91,10 +96,17 @@ export default {
   },
   methods: {
     getProductList() {
-      http.get('/api/product', this.searchParams).then((response) => {
+      http.get('/api/product', { params: this.searchParams }).then((response) => {
         const { totalElements, content } = response;
-        this.productList = content;
-        this.totalNun = totalElements;
+        this.productList = content.map(item => {
+          const coverId = item.productFiles.filter(a => a.type === "COVER")[0].id;
+          const coverUrl = `http://163.43.183.26:8000/api/product/pict/${coverId}`;
+          return {
+            ...item,
+            coverUrl,
+          }
+        });
+        this.totalNum = totalElements;
       })
     },
     productAdd() {
@@ -108,6 +120,22 @@ export default {
     changeSaleStatus(val, id) {
       http.put('/api/product', { id, saleStatus: val }).then((response) => {
         this.getProductList();
+      })
+    },
+    handleDelete(index, data) {
+      const { id } = data;
+      http.delete(`/api/product/${id}`).then((response) => {
+        this.getProductList();
+      })
+    },
+    handleEdit(index, data) {
+      const { id } = data;
+      this.$router.push({
+        name: "productAdd",
+        query: {
+          name: this.pageName,
+          id
+        }
       })
     }
   }
